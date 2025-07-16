@@ -17,13 +17,23 @@ interface Product {
 
 interface ProductCardProps {
   product: Product;
+  showAddToCart?: boolean;
+  onAddToCart?: () => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ 
+  product, 
+  showAddToCart = true,
+  onAddToCart 
+}) => {
   const { addToCart } = useCart();
 
   const handleAddToCart = () => {
-    addToCart(product.id);
+    if (onAddToCart) {
+      onAddToCart();
+    } else {
+      addToCart(product.id);
+    }
   };
 
   return (
@@ -54,16 +64,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <Button 
-          onClick={handleAddToCart}
-          className="w-full"
-          disabled={product.stock_quantity === 0}
-        >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-        </Button>
-      </CardFooter>
+      {showAddToCart && (
+        <CardFooter className="p-4 pt-0">
+          <Button 
+            onClick={handleAddToCart}
+            className="w-full"
+            disabled={product.stock_quantity === 0}
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };

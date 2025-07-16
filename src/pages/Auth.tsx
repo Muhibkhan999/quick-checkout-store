@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<'seller' | 'buyer'>('buyer');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signUp(email, password, fullName);
+    const { error } = await signUp(email, password, fullName, role);
     
     setLoading(false);
   };
@@ -123,6 +125,19 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Account Type</Label>
+                  <RadioGroup value={role} onValueChange={(value) => setRole(value as 'seller' | 'buyer')}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="buyer" id="buyer" />
+                      <Label htmlFor="buyer">Buyer - I want to shop</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="seller" id="seller" />
+                      <Label htmlFor="seller">Seller - I want to sell products</Label>
+                    </div>
+                  </RadioGroup>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Creating Account...' : 'Sign Up'}

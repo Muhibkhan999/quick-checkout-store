@@ -130,6 +130,7 @@ export type Database = {
           image_url: string | null
           name: string
           price: number
+          seller_id: string
           stock_quantity: number | null
           updated_at: string
         }
@@ -141,6 +142,7 @@ export type Database = {
           image_url?: string | null
           name: string
           price: number
+          seller_id: string
           stock_quantity?: number | null
           updated_at?: string
         }
@@ -152,10 +154,19 @@ export type Database = {
           image_url?: string | null
           name?: string
           price?: number
+          seller_id?: string
           stock_quantity?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_seller"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -163,6 +174,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
           user_id: string
         }
@@ -171,6 +183,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
           user_id: string
         }
@@ -179,6 +192,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
           user_id?: string
         }
@@ -192,7 +206,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "seller" | "buyer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -319,6 +333,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["seller", "buyer"],
+    },
   },
 } as const

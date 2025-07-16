@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
 import { ProductCard } from '@/components/ProductCard';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -15,6 +17,7 @@ interface Product {
   image_url: string;
   category: string;
   stock_quantity: number;
+  seller_id: string;
 }
 
 const Index = () => {
@@ -24,6 +27,8 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user, userRole } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -74,11 +79,32 @@ const Index = () => {
         <div className="text-center py-12 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg">
           <h1 className="text-4xl font-bold mb-4">Welcome to ShopMart</h1>
           <p className="text-xl text-muted-foreground mb-6">
-            Discover amazing products at unbeatable prices
+            A marketplace where sellers create real products and buyers discover amazing deals
           </p>
-          <p className="text-lg text-muted-foreground">
-            Browse our collection of {products.length} premium products
-          </p>
+          {!user ? (
+            <div>
+              <p className="text-lg text-muted-foreground mb-4">
+                Join our marketplace with {products.length} authentic products
+              </p>
+              <Button size="lg" onClick={() => navigate('/auth')}>
+                Join Our Marketplace
+              </Button>
+            </div>
+          ) : userRole === 'seller' ? (
+            <div>
+              <p className="text-lg text-muted-foreground mb-4">
+                You have access to seller tools
+              </p>
+              <Button size="lg" onClick={() => navigate('/seller/products/new')}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Product
+              </Button>
+            </div>
+          ) : (
+            <p className="text-lg text-muted-foreground">
+              Browse our collection of {products.length} authentic products from real sellers
+            </p>
+          )}
         </div>
 
         {/* Search and Filter */}
@@ -116,12 +142,30 @@ const Index = () => {
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-lg text-muted-foreground">No products found matching your criteria.</p>
+            {products.length === 0 ? (
+              <div>
+                <p className="text-lg text-muted-foreground mb-4">No products available yet.</p>
+                {userRole === 'seller' ? (
+                  <Button onClick={() => navigate('/seller/products/new')}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add the First Product
+                  </Button>
+                ) : (
+                  <p className="text-muted-foreground">Sellers will add products soon!</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-lg text-muted-foreground">No products found matching your criteria.</p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                showAddToCart={userRole === 'buyer'} 
+              />
             ))}
           </div>
         )}

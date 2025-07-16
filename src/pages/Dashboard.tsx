@@ -5,6 +5,7 @@ import { Package, ShoppingBag, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
+import { useNavigate } from 'react-router-dom';
 
 interface Order {
   id: string;
@@ -23,9 +24,16 @@ interface Order {
 const Dashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Redirect sellers to seller dashboard
+    if (user && userRole === 'seller') {
+      navigate('/seller/dashboard');
+      return;
+    }
+
     const loadOrders = async () => {
       if (!user) return;
 

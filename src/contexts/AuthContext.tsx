@@ -7,7 +7,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  userRole: 'seller' | 'buyer' | null;
+  signUp: (email: string, password: string, fullName: string, role: 'seller' | 'buyer') => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -26,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<'seller' | 'buyer' | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,20 +38,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_IN' && session?.user) {
-          // Create or update profile
+          // Create or update profile and get user role
           setTimeout(async () => {
-            const { error } = await supabase
+            // First try to get existing profile
+            const { data: existingProfile } = await supabase
               .from('profiles')
-              .upsert({
-                user_id: session.user.id,
-                email: session.user.email,
-                full_name: session.user.user_metadata?.full_name
-              });
-            
-            if (error) {
-              console.error('Error creating profile:', error);
+              .select('role')
+              .eq('user_id', session.user.id)
+              .single();
+
+            if (existingProfile) {
+              setUserRole(existingProfile.role);
+            } else {
+              // Create new profile with default role from signup
+              const { error } = await supabase
+                .from('profiles')
+                .upsert({
+                  user_id: session.user.id,
+                  email: session.user.email,
+                  full_name: session.user.user_metadata?.full_name,
+                  role: session.user.user_metadata?.role || 'buyer'
+                });
+              
+              if (error) {
+                console.error('Error creating profile:', error);
+              } else {
+                setUserRole(session.user.user_metadata?.role || 'buyer');
+              }
             }
           }, 0);
+        } else if (event === 'SIGNED_OUT') {
+          setUserRole(null);
         }
         
         setLoading(false);
@@ -66,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, role: 'seller' | 'buyer') => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -75,7 +94,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          full_name: fullName
+          full_name: fullName,
+          role: role
         }
       }
     });
@@ -122,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     session,
     loading,
+    userRole,
     signUp,
     signIn,
     signOut

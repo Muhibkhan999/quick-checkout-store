@@ -10,6 +10,8 @@ import Auth from "./pages/Auth";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/Dashboard";
+import SellerDashboard from "./pages/SellerDashboard";
+import AddProduct from "./pages/AddProduct";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,14 +24,16 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/seller/dashboard" element={<SellerDashboard />} />
+            <Route path="/seller/products/new" element={<AddProduct />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>
