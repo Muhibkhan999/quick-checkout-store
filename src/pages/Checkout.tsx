@@ -5,14 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Layout } from '@/components/Layout';
+import { CreditCard, Truck } from 'lucide-react';
 
 const Checkout = () => {
   const [shippingAddress, setShippingAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [loading, setLoading] = useState(false);
   const { cartItems, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
@@ -22,47 +25,75 @@ const Checkout = () => {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
+    
     setLoading(true);
-
+    
     try {
-      // Create order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          total_amount: cartTotal,
-          status: 'pending',
-          shipping_address: shippingAddress
-        })
-        .select()
-        .single();
+      if (paymentMethod === 'card') {
+        // Handle Stripe payment
+        const { data, error } = await supabase.functions.invoke('create-payment', {
+          body: {
+            amount: Math.round(cartTotal * 100), // Convert to cents
+            currency: 'usd',
+            shipping_address: shippingAddress,
+            cart_items: cartItems
+          }
+        });
 
-      if (orderError) throw orderError;
+        if (error) throw error;
+        
+        // Redirect to Stripe Checkout
+        window.open(data.url, '_blank');
+        
+        toast({
+          title: "Redirecting to payment",
+          description: "You'll be redirected to complete your payment."
+        });
+      } else {
+        // Handle cash on delivery
+        const { data: order, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            user_id: user.id,
+            total_amount: cartTotal,
+            shipping_address: shippingAddress,
+            payment_method: 'cash',
+            status: 'pending'
+          })
+          .select()
+          .single();
 
-      // Create order items
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.product.price
-      }));
+        if (orderError) throw orderError;
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+        // Create order items
+        const orderItems = cartItems.map(item => ({
+          order_id: order.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.product.price
+        }));
 
-      if (itemsError) throw itemsError;
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems);
 
-      // Clear cart
-      await clearCart();
+        if (itemsError) throw itemsError;
 
-      toast({
-        title: "Order placed successfully!",
-        description: `Your order #${order.id.slice(0, 8)} has been placed.`
-      });
+        // Notify sellers
+        await supabase.functions.invoke('notify-sellers', {
+          body: { order_id: order.id }
+        });
 
-      navigate('/dashboard');
+        // Clear cart
+        await clearCart();
+
+        toast({
+          title: "Order placed successfully!",
+          description: "Your cash on delivery order has been confirmed. Our driver will contact you soon."
+        });
+
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error('Error placing order:', error);
       toast({
@@ -134,9 +165,26 @@ const Checkout = () => {
               <CardTitle>Payment Method</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                This is a demo checkout. In a real application, you would integrate 
-                with a payment processor like Stripe or PayPal.
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="cash" id="cash" />
+                  <Label htmlFor="cash" className="flex items-center cursor-pointer">
+                    <Truck className="w-4 h-4 mr-2" />
+                    Cash on Delivery
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="card" id="card" />
+                  <Label htmlFor="card" className="flex items-center cursor-pointer">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Credit/Debit Card (Stripe)
+                  </Label>
+                </div>
+              </RadioGroup>
+              <p className="text-sm text-muted-foreground mt-3">
+                {paymentMethod === 'cash' 
+                  ? 'Pay when the driver delivers your order' 
+                  : 'Secure payment via Stripe'}
               </p>
             </CardContent>
           </Card>
@@ -147,7 +195,8 @@ const Checkout = () => {
             size="lg"
             disabled={loading || cartItems.length === 0}
           >
-            {loading ? 'Placing Order...' : 'Place Order'}
+            {loading ? 'Processing...' : 
+             paymentMethod === 'card' ? 'Pay with Card' : 'Place Order (Cash)'}
           </Button>
         </form>
       </div>

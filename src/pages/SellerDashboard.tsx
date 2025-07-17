@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
 import { useNavigate } from 'react-router-dom';
+import { SellerNotifications } from '@/components/SellerNotifications';
 
 interface Product {
   id: string;
@@ -107,6 +108,11 @@ const SellerDashboard = () => {
             <Plus className="w-4 h-4 mr-2" />
             Add Product
           </Button>
+        </div>
+
+        {/* Notifications */}
+        <div className="mb-8">
+          <SellerNotifications />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

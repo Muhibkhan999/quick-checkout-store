@@ -1,1 +1,25 @@
 project_id = "kkhvditcyloxshxakwao"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[graphql]
+enabled = true
+port = 54329
+schema_version = 1
+
+[inbound_email]
+enabled = false
+
+[functions.create-payment]
+verify_jwt = true
+
+[functions.notify-sellers]
+verify_jwt = false
+
+[functions.webhook-stripe]
+verify_jwt = false
