@@ -94,27 +94,42 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          driver_assigned: boolean | null
+          driver_notes: string | null
+          estimated_delivery: string | null
           id: string
+          payment_method: string | null
           shipping_address: string | null
           status: string | null
+          stripe_session_id: string | null
           total_amount: number
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          driver_assigned?: boolean | null
+          driver_notes?: string | null
+          estimated_delivery?: string | null
           id?: string
+          payment_method?: string | null
           shipping_address?: string | null
           status?: string | null
+          stripe_session_id?: string | null
           total_amount: number
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          driver_assigned?: boolean | null
+          driver_notes?: string | null
+          estimated_delivery?: string | null
           id?: string
+          payment_method?: string | null
           shipping_address?: string | null
           status?: string | null
+          stripe_session_id?: string | null
           total_amount?: number
           updated_at?: string
           user_id?: string
@@ -197,6 +212,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      seller_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          order_id: string | null
+          read: boolean | null
+          seller_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          order_id?: string | null
+          read?: boolean | null
+          seller_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          order_id?: string | null
+          read?: boolean | null
+          seller_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_notifications_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
