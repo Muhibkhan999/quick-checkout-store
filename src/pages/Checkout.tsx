@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Layout } from '@/components/Layout';
 import { CreditCard, Truck } from 'lucide-react';
+import MapLocationPicker from '@/components/MapLocationPicker';
 
 const Checkout = () => {
   const [shippingAddress, setShippingAddress] = useState('');
@@ -117,24 +118,10 @@ const Checkout = () => {
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
         
         <form onSubmit={handlePlaceOrder} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Shipping Address</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  placeholder="Enter your full shipping address"
-                  value={shippingAddress}
-                  onChange={(e) => setShippingAddress(e.target.value)}
-                  required
-                  rows={4}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <MapLocationPicker
+            onLocationSelect={(address) => setShippingAddress(address)}
+            initialAddress={shippingAddress}
+          />
 
           <Card>
             <CardHeader>

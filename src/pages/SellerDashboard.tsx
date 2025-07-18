@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Layout } from '@/components/Layout';
 import { useNavigate } from 'react-router-dom';
 import { SellerNotifications } from '@/components/SellerNotifications';
+import SellerAnalytics from '@/components/SellerAnalytics';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Product {
   id: string;
@@ -115,119 +117,132 @@ const SellerDashboard = () => {
           <SellerNotifications />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{products.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-              <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalOrders}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{lowStockProducts.length}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Products</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <p>Loading products...</p>
-              ) : products.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">No products yet</p>
-                  <Button onClick={() => navigate('/seller/products/new')}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Your First Product
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {products.slice(0, 5).map((product) => (
-                    <div key={product.id} className="flex items-center justify-between p-3 border rounded">
-                      <div>
-                        <h4 className="font-semibold">{product.name}</h4>
-                        <p className="text-sm text-muted-foreground">${product.price}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant={product.stock_quantity < 10 ? "destructive" : "secondary"}>
-                          {product.stock_quantity} in stock
-                        </Badge>
-                      </div>
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{products.length}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                  <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalOrders}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{lowStockProducts.length}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Products</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <p>Loading products...</p>
+                  ) : products.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground mb-4">No products yet</p>
+                      <Button onClick={() => navigate('/seller/products/new')}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Your First Product
+                      </Button>
                     </div>
-                  ))}
-                  {products.length > 5 && (
-                    <Button variant="outline" onClick={() => navigate('/seller/products')} className="w-full">
-                      View All Products
-                    </Button>
+                  ) : (
+                    <div className="space-y-4">
+                      {products.slice(0, 5).map((product) => (
+                        <div key={product.id} className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <h4 className="font-semibold">{product.name}</h4>
+                            <p className="text-sm text-muted-foreground">${product.price}</p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={product.stock_quantity < 10 ? "destructive" : "secondary"}>
+                              {product.stock_quantity} in stock
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                      {products.length > 5 && (
+                        <Button variant="outline" onClick={() => navigate('/seller/products')} className="w-full">
+                          View All Products
+                        </Button>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <p>Loading orders...</p>
-              ) : orderItems.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">No orders yet</p>
-              ) : (
-                <div className="space-y-4">
-                  {orderItems.slice(0, 5).map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded">
-                      <div>
-                        <p className="font-semibold">Order #{item.order.id.slice(0, 8)}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(item.order.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
-                        <Badge variant="secondary">{item.order.status}</Badge>
-                      </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Orders</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <p>Loading orders...</p>
+                  ) : orderItems.length === 0 ? (
+                    <p className="text-center py-8 text-muted-foreground">No orders yet</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {orderItems.slice(0, 5).map((item, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded">
+                          <div>
+                            <p className="font-semibold">Order #{item.order.id.slice(0, 8)}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(item.order.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                            <Badge variant="secondary">{item.order.status}</Badge>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <SellerAnalytics />
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

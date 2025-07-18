@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import ChatSystem from '@/components/ChatSystem';
 
 interface Product {
   id: string;
@@ -13,6 +15,7 @@ interface Product {
   image_url: string;
   category: string;
   stock_quantity: number;
+  seller_id: string;
 }
 
 interface ProductCardProps {
@@ -27,6 +30,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onAddToCart 
 }) => {
   const { addToCart } = useCart();
+  const { user, userRole } = useAuth();
 
   const handleAddToCart = () => {
     if (onAddToCart) {
@@ -64,18 +68,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         </div>
       </CardContent>
-      {showAddToCart && (
-        <CardFooter className="p-4 pt-0">
-          <Button 
-            onClick={handleAddToCart}
-            className="w-full"
-            disabled={product.stock_quantity === 0}
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-          </Button>
-        </CardFooter>
-      )}
+      <CardFooter className="p-4 pt-0">
+        <div className="space-y-2 w-full">
+          {showAddToCart && (
+            <Button 
+              onClick={handleAddToCart}
+              className="w-full"
+              disabled={product.stock_quantity === 0}
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+            </Button>
+          )}
+          
+          {user && userRole === 'buyer' && product.seller_id !== user.id && (
+            <ChatSystem
+              recipientId={product.seller_id}
+              productId={product.id}
+              triggerText="Contact Seller"
+            />
+          )}
+        </div>
+      </CardFooter>
     </Card>
   );
 };
