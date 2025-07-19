@@ -75,10 +75,13 @@ const ChatSystem: React.FC<ChatSystemProps> = ({
             filter: `or(and(sender_id.eq.${user.id},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${user.id}))`
           },
           (payload) => {
+            console.log('New message received via realtime:', payload);
             setMessages(prev => [...prev, payload.new as Message]);
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Realtime subscription status:', status);
+        });
 
       return () => {
         supabase.removeChannel(channel);
