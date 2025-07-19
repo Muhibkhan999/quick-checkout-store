@@ -135,7 +135,15 @@ const ChatSystem: React.FC<ChatSystemProps> = ({
     setLoading(true);
     
     try {
-      const { error } = await supabase
+      console.log('Sending message:', {
+        sender_id: user.id,
+        receiver_id: recipientId,
+        content: newMessage.trim(),
+        product_id: productId,
+        order_id: orderId
+      });
+      
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           sender_id: user.id,
@@ -143,9 +151,15 @@ const ChatSystem: React.FC<ChatSystemProps> = ({
           content: newMessage.trim(),
           product_id: productId,
           order_id: orderId
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Message insert error:', error);
+        throw error;
+      }
+
+      console.log('Message inserted successfully:', data);
 
       setNewMessage('');
       

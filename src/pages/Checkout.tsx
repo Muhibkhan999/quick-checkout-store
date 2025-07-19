@@ -52,6 +52,11 @@ const Checkout = () => {
         });
       } else {
         // Handle cash on delivery
+        console.log('Creating cash order for user:', user.id);
+        console.log('Cart items:', cartItems);
+        console.log('Cart total:', cartTotal);
+        console.log('Shipping address:', shippingAddress);
+        
         const { data: order, error: orderError } = await supabase
           .from('orders')
           .insert({
@@ -64,7 +69,12 @@ const Checkout = () => {
           .select()
           .single();
 
-        if (orderError) throw orderError;
+        if (orderError) {
+          console.error('Order creation error:', orderError);
+          throw orderError;
+        }
+
+        console.log('Order created successfully:', order);
 
         // Create order items
         const orderItems = cartItems.map(item => ({
@@ -74,11 +84,18 @@ const Checkout = () => {
           price: item.product.price
         }));
 
+        console.log('Inserting order items:', orderItems);
+
         const { error: itemsError } = await supabase
           .from('order_items')
           .insert(orderItems);
 
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          console.error('Order items creation error:', itemsError);
+          throw itemsError;
+        }
+
+        console.log('Order items created successfully');
 
         // Notify sellers
         await supabase.functions.invoke('notify-sellers', {
