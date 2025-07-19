@@ -90,15 +90,17 @@ const ChatSystem: React.FC<ChatSystemProps> = ({
   }, [isOpen, user, recipientId]);
 
   const loadRecipientProfile = async () => {
+    console.log('Loading recipient profile for:', recipientId);
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', recipientId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error loading recipient profile:', error);
     } else {
+      console.log('Recipient profile loaded:', data);
       setRecipient(data);
     }
   };
@@ -106,6 +108,7 @@ const ChatSystem: React.FC<ChatSystemProps> = ({
   const loadMessages = async () => {
     if (!user) return;
 
+    console.log('Loading messages between user:', user.id, 'and recipient:', recipientId);
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -115,6 +118,7 @@ const ChatSystem: React.FC<ChatSystemProps> = ({
     if (error) {
       console.error('Error loading messages:', error);
     } else {
+      console.log('Messages loaded:', data?.length || 0, 'messages');
       setMessages(data || []);
       
       // Mark messages as read
@@ -123,6 +127,7 @@ const ChatSystem: React.FC<ChatSystemProps> = ({
       ) || [];
       
       if (unreadMessages.length > 0) {
+        console.log('Marking', unreadMessages.length, 'messages as read');
         await supabase
           .from('messages')
           .update({ read: true })
