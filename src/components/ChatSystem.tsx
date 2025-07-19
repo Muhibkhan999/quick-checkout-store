@@ -65,18 +65,22 @@ const ChatSystem: React.FC<ChatSystemProps> = ({
       
       // Subscribe to real-time messages
       const channel = supabase
-        .channel('messages')
+        .channel('chat-messages')
         .on(
           'postgres_changes',
           {
             event: 'INSERT',
             schema: 'public',
-            table: 'messages',
-            filter: `or(and(sender_id.eq.${user.id},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${user.id}))`
+            table: 'messages'
           },
           (payload) => {
             console.log('New message received via realtime:', payload);
-            setMessages(prev => [...prev, payload.new as Message]);
+            const newMessage = payload.new as Message;
+            // Only add message if it's relevant to this conversation
+            if ((newMessage.sender_id === user.id && newMessage.receiver_id === recipientId) ||
+                (newMessage.sender_id === recipientId && newMessage.receiver_id === user.id)) {
+              setMessages(prev => [...prev, newMessage]);
+            }
           }
         )
         .subscribe((status) => {
