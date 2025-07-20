@@ -1,8 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Eye } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ChatSystem from '@/components/ChatSystem';
@@ -70,16 +71,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <div className="space-y-2 w-full">
-          {showAddToCart && (
-            <Button 
-              onClick={handleAddToCart}
-              className="w-full"
-              disabled={product.stock_quantity === 0}
-            >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-            </Button>
-          )}
+          <div className="flex gap-2">
+            <Link to={`/product/${product.id}`} className="flex-1">
+              <Button variant="outline" className="w-full">
+                <Eye className="w-4 h-4 mr-2" />
+                View Details
+              </Button>
+            </Link>
+            {showAddToCart && (
+              <Button 
+                onClick={handleAddToCart}
+                className="flex-1"
+                disabled={product.stock_quantity === 0}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+              </Button>
+            )}
+          </div>
           
           {user && userRole === 'buyer' && product.seller_id !== user.id && (
             <ChatSystem

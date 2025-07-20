@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import SellerDashboard from "./pages/SellerDashboard";
 import AddProduct from "./pages/AddProduct";
 import Messages from "./pages/Messages";
+import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/seller/dashboard" element={<SellerDashboard />} />
             <Route path="/seller/products/new" element={<AddProduct />} />
             <Route path="/messages" element={<Messages />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </BrowserRouter>
