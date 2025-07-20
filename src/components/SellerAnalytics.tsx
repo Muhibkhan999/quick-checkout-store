@@ -16,7 +16,8 @@ import {
   Bar,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  Legend
 } from 'recharts';
 
 interface AnalyticsData {
@@ -351,16 +352,51 @@ const SellerAnalytics: React.FC = () => {
                     data={analytics.categoryDistribution}
                     cx="50%"
                     cy="50%"
+                    labelLine={false}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => 
+                      percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''
+                    }
                   >
                     {analytics.categoryDistribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Revenue']} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Orders by Product Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Orders by Product</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={analytics.productPerformance.slice(0, 6)}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="orders"
+                    label={({ name, orders }) => orders > 0 ? `${name}: ${orders}` : ''}
+                  >
+                    {analytics.productPerformance.slice(0, 6).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value} orders`, 'Orders']} />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </div>

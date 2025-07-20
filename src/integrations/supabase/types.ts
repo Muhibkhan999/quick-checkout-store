@@ -264,6 +264,33 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_analytics: {
+        Row: {
+          created_at: string
+          id: string
+          seller_id: string
+          total_orders: number
+          total_revenue: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          seller_id: string
+          total_orders?: number
+          total_revenue?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          seller_id?: string
+          total_orders?: number
+          total_revenue?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       seller_notifications: {
         Row: {
           created_at: string
